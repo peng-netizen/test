@@ -1,0 +1,138 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1400.v7fd111b_ec82f">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2203.v89fa_170c2b_f5"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2203.v89fa_170c2b_f5">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.properties.PreserveStashesJobProperty plugin="pipeline-model-definition@2.2203.v89fa_170c2b_f5">
+      <buildCount>50</buildCount>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.properties.PreserveStashesJobProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>pool</name>
+          <defaultValue>cd04</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>buildid</name>
+          <description>testlink build_id</description>
+          <defaultValue>3272</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>key</name>
+          <description>API interface,在testlink获取</description>
+          <defaultValue>552d1ef540d6aa752358444dafc4f270</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>protocol</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>NVME</string>
+              <string>SATA</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>test_type</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>DVT</string>
+              <string>DAILY</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>E_MAIL</name>
+          <description>用于接收jenkins的邮件</description>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>is_new</name>
+          <description>是否重新运行</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>YES</string>
+              <string>NO</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>scan</name>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>yes</string>
+              <string>no</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>breeder_zip</name>
+          <description>Default path, do not modify if unnecessary</description>
+          <defaultValue>http://10.40.0.58/SWQA/temp/wp/breeder_getopt.zip</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>update_INNO_CFG</name>
+          <description>用于替换INNO_CFG.py文件，如果需要更新，请填写地址
+如：http://10.40.0.58/SWQA/Tools/INNO_CFG.py</description>
+          <defaultValue>NO</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3903.v48a_8836749e9">
+    <script>pipeline { 
+    agent any
+    stages {
+        stage(&apos;Example&apos;) {
+            steps {
+                script {
+                //传入下游构建参数
+                parameters = [
+                string(name: &apos;pool&apos;, value: &quot;$pool&quot;),
+                string(name: &apos;buildid&apos;, value: &quot;$buildid&quot;),
+                string(name: &apos;key&apos;, value: &quot;$key&quot;),
+                string(name: &apos;protocol&apos;, value: &quot;$protocol&quot;),
+                string(name: &apos;test_type&apos;, value: &quot;$test_type&quot;),
+                string(name: &apos;E_MAIL&apos;, value: &quot;$E_MAIL&quot;),
+                string(name: &apos;is_new&apos;, value: &quot;$is_new&quot;),
+                string(name: &apos;scan&apos;, value: &quot;$scan&quot;),
+                string(name: &apos;breeder_zip&apos;, value: &quot;$breeder_zip&quot;),
+                string(name: &apos;update_INNO_CFG&apos;, value: &quot;$update_INNO_CFG&quot;),
+                string(name: &apos;dir&apos;,value: &quot;$env.workspace&quot;)
+                                    
+                ]
+               //调用下游构建
+                build job: &apos;test&apos;, parameters: parameters
+                }
+                echo &apos;正常执行完成，报告保存&apos;
+                archiveArtifacts artifacts: &quot;breeder/report.xlsx&quot;, followSymlinks: false
+            }
+        }
+    }
+    post { 
+        aborted  { 
+            echo &apos;终止构建，报告保存&apos;
+            archiveArtifacts artifacts: &quot;breeder/report.xlsx&quot;, followSymlinks: false
+        }
+    }
+}
+
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
