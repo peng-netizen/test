@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+    triggers {
+        // 当前工作区成功完成后触发下游工作区
+        upstream(upstreamProjects: ['上游工作区名称'], threshold: hudson.model.Result.SUCCESS)
+    }
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building...'
+                // build steps
+            }
+        }
+        // 更多的阶段...
+    }
+    // 配置下游工作区
+    post {
+        always {
+            // 下游工作区配置
+            cascading {
+                // 指定下游工作区的参数，例如分支名称或标签
+                nextBuild '下游工作区名称', [STRING_PARAMETER: 'parameter_value']
+            }
+        }
+    }
+}
